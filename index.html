@@ -879,16 +879,17 @@ NOTAS ADICIONALES: ${notes||'Ninguna'}
 
 INSTRUCCIONES:
 1. Para CADA comida genera EXACTAMENTE 3 opciones (Opción A, Opción B, Opción C).
-2. Cada opción incluye alimentos con gramajes exactos en gramos.
-3. Cada opción respeta los macros de esa comida (±5% tolerancia).
+2. Cada opción incluye alimentos con gramajes exactos en gramos. TODOS los gramajes son EN CRUDO y sin procesar (excepto conservas como atún al natural que se indica escurrido). Ejemplo correcto: "150g pechuga de pollo en crudo", "80g arroz blanco en crudo", "30g aceite de oliva". Nunca indiques pesos en cocido.
+3. Cada opción respeta los macros de esa comida (±5% tolerancia). Los macros deben calcularse sobre el peso EN CRUDO de cada alimento.
 4. Prioriza alimentos de la lista de consumo frecuente.
 5. Las 3 opciones deben ser variadas entre sí.
-6. Indica macros reales de cada opción (kcal, P, C, G).
+6. Indica macros reales de cada opción (kcal, P, C, G) calculados sobre pesos en crudo.
 7. Alimentos simples, reales y fáciles de preparar.
 8. Ten en cuenta el objetivo: en ${OBJ[curObj].label} ${curObj==='def'?'prioriza saciedad y proteína':curObj==='vol'?'prioriza carbohidratos de calidad':'busca equilibrio entre proteína y carbohidratos'}.
+9. En la lista de foods de cada opción añade siempre "(en crudo)" al final de cada alimento sólido para que quede claro. Ejemplo: "150g pechuga de pollo (en crudo)", "80g arroz blanco (en crudo)".
 
 Responde ÚNICAMENTE en JSON válido, sin markdown, sin texto adicional:
-{"meals":[{"name":"nombre comida","kcal":número,"prot":número,"carb":número,"fat":número,"options":[{"label":"Opción A","foods":["100g pechuga de pollo","80g arroz blanco cocido"],"kcal":número,"prot":número,"carb":número,"fat":número},{"label":"Opción B",...},{"label":"Opción C",...}]}]}`;
+{"meals":[{"name":"nombre comida","kcal":número,"prot":número,"carb":número,"fat":número,"options":[{"label":"Opción A","foods":["150g pechuga de pollo (en crudo)","80g arroz blanco (en crudo)","200g brócoli (en crudo)","10g aceite de oliva"],"kcal":número,"prot":número,"carb":número,"fat":número},{"label":"Opción B",...},{"label":"Opción C",...}]}]}`;
 
   const btn=document.getElementById('btnGen');
   btn.disabled=true; btn.textContent='⏳ Generando...';
