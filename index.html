@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach Tool · Culturismo Natural</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+:root {
+  --bg:#0b0f14;--s1:#111820;--s2:#17212e;--s3:#1e2c3a;
+  --border:#243348;--text:#dde8f4;--muted:#607d9b;--dim:#344e68;
+  --orange:#f97316;--blue:#3b82f6;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--purple:#a855f7;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;font-size:14px;line-height:1.5;}
+
+header{background:var(--s1);border-bottom:2px solid var(--orange);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.api-row{display:flex;align-items:center;gap:8px;}
+.api-input{background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;padding:7px 12px;outline:none;width:260px;transition:border-color .15s;}
+.api-input:focus{border-color:var(--orange);}
+.api-input::placeholder{color:var(--dim);font-family:'Inter',sans-serif;}
+.api-saved{font-size:10px;color:var(--green);margin-left:4px;}
+.api-btn{background:var(--s3);border:1px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.api-btn:hover{border-color:var(--orange);color:var(--orange);}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo h1{font-size:17px;font-weight:700;}
+.logo p{font-size:11px;color:var(--muted);}
+.pill{background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
+
+.wrap{max-width:960px;margin:28px auto;padding:0 20px;display:flex;flex-direction:column;gap:20px;}
+
+/* ── Card ── */
+.card{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.card-head{background:var(--s3);border-bottom:1px solid var(--border);padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--orange);}
+.card-body{padding:20px;}
+
+/* ── Forms ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.fi{background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;padding:9px 12px;outline:none;transition:border-color .15s;width:100%;}
+.fi:focus{border-color:var(--orange);}
+select.fi{cursor:pointer;}
+
+/* ── PAL ── */
+.pal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;}
+.pal-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:12px 8px;cursor:pointer;transition:all .2s;text-align:center;}
+.pal-card:hover{border-color:var(--orange);}
+.pal-card.active{border-color:var(--orange);background:rgba(249,115,22,.08);}
+.pal-emoji{font-size:20px;margin-bottom:6px;}
+.pal-label{font-size:10px;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.3;}
+.pal-val{font-size:11px;color:var(--orange);font-family:'JetBrains Mono',monospace;font-weight:700;}
+.pal-desc{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.pal-note{font-size:10px;color:var(--dim);border-left:2px solid var(--border);padding-left:10px;line-height:1.7;margin-top:10px;}
+
+/* ── Resultado metabólico ── */
+.res-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+.res-block{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+.res-block.hl{border-color:var(--orange);background:rgba(249,115,22,.05);}
+.rb-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;}
+.rb-val{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--text);}
+.rb-val.or{color:var(--orange);}
+.rb-unit{font-size:11px;color:var(--muted);margin-top:2px;}
+.rb-form{font-size:10px;color:var(--dim);margin-top:8px;line-height:1.5;}
+
+/* ── Obj tabs ── */
+.obj-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.obj-tab{flex:1;padding:9px 6px;border-radius:9px;border:1px solid var(--border);background:var(--s1);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;text-transform:uppercase;letter-spacing:.4px;}
+.obj-tab.active{background:var(--orange);border-color:var(--orange);color:#fff;}
+
+/* ── Sliders ── */
+.range-block{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.range-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.range-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.range-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--orange);}
+.range-limits{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:4px;}
+.range-ev{font-size:10px;color:var(--dim);line-height:1.6;margin-top:8px;border-left:2px solid var(--border);padding-left:8px;}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 3px rgba(249,115,22,.2);cursor:pointer;}
+input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 0 5px rgba(249,115,22,.3);}
+
+/* ── Macros resultado ── */
+.macro-res{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px;}
+.mr-block{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.mr-val{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;}
+.mr-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+.mr-sub{font-size:10px;color:var(--dim);margin-top:2px;}
+.dist-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:14px 0 8px;}
+.db-p{background:#ef4444;transition:width .4s;}
+.db-c{background:#f59e0b;transition:width .4s;}
+.db-f{background:#a855f7;transition:width .4s;}
+.dist-leg{display:flex;gap:14px;margin-bottom:4px;}
+.dl-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.dot{width:7px;height:7px;border-radius:50%;}
+
+/* ── Periodización ── */
+.period-info{font-size:11px;color:var(--muted);line-height:1.7;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.12);border-radius:8px;padding:12px 14px;margin-bottom:16px;}
+.period-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+.period-col{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.period-col.train-col{border-color:rgba(249,115,22,.4);}
+.period-col.rest-col{border-color:rgba(59,130,246,.3);}
+.period-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+.train-col .period-col-title{color:var(--orange);}
+.rest-col  .period-col-title{color:var(--blue);}
+.period-kcal{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;margin-bottom:10px;}
+.train-col .period-kcal{color:var(--orange);}
+.rest-col  .period-kcal{color:var(--blue);}
+.pm-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.pm-row:last-child{border-bottom:none;}
+.pm-lbl{color:var(--muted);font-size:11px;}
+.pm-val{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;}
+.badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;}
+.b-up{background:rgba(34,197,94,.15);color:var(--green);}
+.b-dn{background:rgba(59,130,246,.15);color:var(--blue);}
+.b-eq{background:rgba(96,125,155,.1);color:var(--muted);}
+.day-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.day-btn{font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s;border:none;}
+.day-btn.train{background:rgba(249,115,22,.2);color:var(--orange);border:1px solid rgba(249,115,22,.3);}
+.day-btn.rest{background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
+.week-avg{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:14px;}
+.week-avg-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+
+/* ── Distribución comidas ── */
+.meals-sel{display:flex;gap:8px;margin-bottom:16px;}
+.meal-btn{flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:var(--s1);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;}
+.meal-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+.dist-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.dist-table th{background:var(--s3);color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+.dist-table td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.dist-table tr:last-child td{border-bottom:none;}
+.dist-table input[type=number]{background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--orange);font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;padding:5px 8px;width:70px;outline:none;text-align:center;}
+.dist-table input[type=number]:focus{border-color:var(--orange);}
+.meal-name-in{background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:5px 10px;width:150px;outline:none;}
+.meal-name-in:focus{border-color:var(--blue);}
+.pct-ok{color:var(--green);font-size:11px;}
+.pct-warn{color:var(--red);font-size:11px;}
+
+/* ── Upload CSV ── */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--s1);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--orange);background:rgba(249,115,22,.05);}
+.freq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:14px;}
+.freq-item{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.freq-name{font-size:12px;font-weight:600;flex:1;}
+.freq-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.f-daily{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+.f-weekly{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
+.f-monthly{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
+.f-rare{background:rgba(96,125,155,.1);color:var(--muted);border:1px solid var(--border);}
+.f-never{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.15);}
+
+/* ── Generar ── */
+.btn-gen{background:var(--orange);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;width:100%;justify-content:center;}
+.btn-gen:hover{opacity:.9;}
+.btn-gen:disabled{background:var(--dim);cursor:not-allowed;}
+
+/* ── Dieta resultado ── */
+.meal-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.meal-card-head{background:var(--s3);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.meal-card-title{font-size:13px;font-weight:700;}
+.meal-card-macros{display:flex;gap:8px;font-size:11px;flex-wrap:wrap;}
+.mpill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;}
+.mp-p{background:rgba(239,68,68,.15);color:#ef4444;}
+.mp-c{background:rgba(245,158,11,.15);color:#f59e0b;}
+.mp-f{background:rgba(168,85,247,.15);color:#a855f7;}
+.meal-opt{padding:14px 16px;border-top:1px solid var(--border);}
+.opt-label{font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.opt-foods{font-size:13px;line-height:1.9;}
+.opt-macros{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;font-size:11px;color:var(--muted);}
+.opt-macros strong{color:var(--text);}
+
+/* ── Info / error ── */
+.info-box{background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:12px 14px;font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:14px;}
+.info-box strong{color:var(--text);}
+.err-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--red);}
+.ev-note{background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.12);border-radius:10px;padding:14px 16px;font-size:11px;color:var(--muted);line-height:1.8;}
+.ev-note strong{color:var(--blue);}
+
+.loading{text-align:center;padding:40px 20px;color:var(--muted);}
+.spin{font-size:36px;animation:spin 1s linear infinite;display:inline-block;margin-bottom:12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.btn-sec{background:var(--s3);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;transition:all .15s;}
+.btn-sec:hover{border-color:var(--orange);color:var(--orange);}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+@media(max-width:700px){
+  .pal-grid{grid-template-columns:repeat(3,1fr);}
+  .res-grid,.macro-res,.period-grid{grid-template-columns:1fr;}
+  .g2,.g3,.g4{grid-template-columns:1fr;}
+  .meals-sel{flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div style="font-size:24px">⚡</div>
+    <div><h1>Coach Tool · Culturismo Natural</h1><p>Calculadora TDEE · Macros · Periodización · Planificador de Dieta con IA</p></div>
+  </div>
+  <div class="api-row">
+    <input class="api-input" id="apiKey" type="password" placeholder="Introduce tu API key (sk-ant-...)" oninput="saveKey()">
+    <button class="api-btn" onclick="toggleKeyVisibility()">👁</button>
+    <span class="api-saved" id="keySaved" style="display:none">✓ Guardada</span>
+    <div class="pill" style="margin-left:8px">Pro Tool</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ══════════════════════════════════════
+     BLOQUE 1 · DATOS DEL CLIENTE
+════════════════════════════════════════ -->
+<div class="card">
+  <div class="card-head"><span class="card-title">👤 1 · Datos del cliente</span></div>
+  <div class="card-body">
+    <div class="g2">
+      <div class="fg"><label class="fl">Nombre</label><input class="fi" id="name" type="text" placeholder="Nombre del cliente" oninput="compute()"></div>
+      <div class="fg"><label class="fl">Sexo biológico</label>
+        <select class="fi" id="sex" onchange="compute()">
+          <option value="m">Hombre</option><option value="f">Mujer</option>
+        </select>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="fg"><label class="fl">Edad (años)</label><input class="fi" id="age" type="number" placeholder="25" min="16" max="80" oninput="compute()"></div>
+      <div class="fg"><label class="fl">Peso (kg)</label><input class="fi" id="weight" type="number" placeholder="80" min="30" max="250" step=".1" oninput="compute()"></div>
+      <div class="fg"><label class="fl">Altura (cm)</label><input class="fi" id="height" type="number" placeholder="178" min="140" max="220" oninput="compute()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BLOQUE 2 · FACTOR DE ACTIVIDAD
+════════════════════════════════════════ -->
+<div class="card">
+  <div class="card-head"><span class="card-title">🏃 2 · Factor de actividad (PAL)</span></div>
+  <div class="card-body">
+    <div class="pal-grid" id="palGrid"></div>
+    <div class="pal-note" id="palNote"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BLOQUE 3 · RESULTADO METABÓLICO
+════════════════════════════════════════ -->
+<div class="card" id="cardMeta" style="display:none">
+  <div class="card-head">
+    <span class="card-title">📊 3 · Resultado metabólico</span>
+    <button class="btn-sec" id="btnExport" onclick="exportAll()">↗ Exportar</button>
+  </div>
+  <div class="card-body">
+    <div id="metaResult"></div>
+
+    <!-- Objetivo -->
+    <div style="margin-top:20px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Objetivo</div>
+      <div class="obj-tabs">
+        <button class="obj-tab active" id="tab-def" onclick="setObj('def')">🔵 Definición</button>
+        <button class="obj-tab" id="tab-rec" onclick="setObj('rec')">🟢 Recomp.</button>
+        <button class="obj-tab" id="tab-vol" onclick="setObj('vol')">🟠 Volumen</button>
+      </div>
+      <div id="rangeControls"></div>
+      <div id="macroResult"></div>
+    </div>
+
+    <!-- Periodización -->
+    <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">📅 Nutrición periodizada · Entreno vs Descanso</div>
+      <div class="period-info">
+        La <strong style="color:var(--text)">proteína se mantiene igual ambos días</strong> — la MPS permanece elevada 24–48h tras el entrenamiento. Los <strong style="color:var(--text)">carbohidratos absorben toda la diferencia calórica</strong>. La grasa se mantiene constante para no comprometer la función hormonal.
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Días de entrenamiento (clic para cambiar)</div>
+        <div class="day-selector" id="daySelector"></div>
+        <div style="font-size:10px;color:var(--dim)" id="daySummary"></div>
+      </div>
+      <div class="range-block">
+        <div class="range-head">
+          <span class="range-lbl">Diferencia calórica entre días</span>
+          <span class="range-val" id="valPeriod">200 kcal</span>
+        </div>
+        <input type="range" id="slPeriod" min="0" max="500" step="25" value="200" oninput="onPeriodSlider()">
+        <div class="range-limits"><span>0 kcal (mismos macros ambos días)</span><span>500 kcal (diferencia máxima)</span></div>
+        <div class="range-ev">Los carbohidratos se concentran en días de entreno (mayor demanda de glucógeno) y se reducen en descanso. La media calórica semanal se mantiene igual al objetivo (Impey et al., Sports Med 2018).</div>
+      </div>
+      <div id="periodResult"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BLOQUE 4 · DISTRIBUCIÓN POR COMIDAS
+════════════════════════════════════════ -->
+<div class="card" id="cardMeals" style="display:none">
+  <div class="card-head">
+    <span class="card-title">🍽️ 4 · Distribución por comidas</span>
+    <span id="pctTotal" class="pct-ok"></span>
+  </div>
+  <div class="card-body">
+    <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Número de comidas</div>
+    <div class="meals-sel">
+      <button class="meal-btn" onclick="setMeals(2)">2 comidas</button>
+      <button class="meal-btn" onclick="setMeals(3)">3 comidas</button>
+      <button class="meal-btn active" onclick="setMeals(4)">4 comidas</button>
+      <button class="meal-btn" onclick="setMeals(5)">5 comidas</button>
+    </div>
+    <table class="dist-table" id="distTable"></table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BLOQUE 5 · CUESTIONARIO CSV
+════════════════════════════════════════ -->
+<div class="card" id="cardCSV" style="display:none">
+  <div class="card-head"><span class="card-title">📋 5 · Cuestionario de consumo frecuente</span></div>
+  <div class="card-body">
+    <div class="info-box">
+      Sube el CSV del cuestionario de consumo frecuente del cliente. La app detectará qué alimentos consume con más frecuencia y los priorizará al generar la dieta. Los alimentos marcados como <strong>Nunca</strong> serán excluidos.
+    </div>
+    <div class="upload-zone" id="uploadZone"
+      onclick="document.getElementById('csvIn').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="onDrop(event)">
+      <input type="file" id="csvIn" accept=".csv" style="display:none" onchange="loadCSV(this.files[0])">
+      <div style="font-size:36px;margin-bottom:10px">📂</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px">Haz clic o arrastra el CSV aquí</div>
+      <div style="font-size:11px;color:var(--muted)">Formato: cuestionario de consumo frecuente · CSV</div>
+    </div>
+    <div id="freqResult" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--green)">✓ Cuestionario cargado</span>
+        <span id="freqSummary" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+      <div class="freq-grid" id="freqGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BLOQUE 6 · GENERAR DIETA
+════════════════════════════════════════ -->
+<div class="card" id="cardDiet" style="display:none">
+  <div class="card-head"><span class="card-title">✨ 6 · Generar dieta personalizada con IA</span></div>
+  <div class="card-body">
+    <div class="info-box">
+      Claude generará <strong>3 opciones de menú para cada comida</strong>, priorizando los alimentos que el cliente consume con más frecuencia, respetando los macros y calorías de cada toma, y adaptando las opciones al objetivo seleccionado.
+    </div>
+    <div class="g2" style="margin-bottom:16px">
+      <div class="fg">
+        <label class="fl">Tipo de día para la dieta</label>
+        <select class="fi" id="dietDayType" onchange="">
+          <option value="avg">Día medio (macros base)</option>
+          <option value="train">Día de entrenamiento</option>
+          <option value="rest">Día de descanso</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Notas adicionales para la IA (opcional)</label>
+        <input class="fi" id="dietNotes" type="text" placeholder="Ej: sin gluten, prefiere cenas ligeras...">
+      </div>
+    </div>
+    <button class="btn-gen" id="btnGen" onclick="generateDiet()">✨ Generar dieta personalizada</button>
+    <div id="dietResult" style="margin-top:20px"></div>
+  </div>
+</div>
+
+<!-- Nota evidencia -->
+<div class="ev-note">
+  <strong>Base científica:</strong> TMB con <strong>Mifflin-St Jeor (1990)</strong> (Frankenfield et al., JADA 2005; O'Neill et al., Sports Med 2023). Factores PAL calibrados con <strong>agua doblemente marcada (DLW)</strong> (DRI Energy Report 2023). Rangos de macros: Helms et al. (JISSN 2014), ISSN Position Stand, Barakat et al. (NSCA 2020), Helms/Krieger/Dieter (Sports Med Open 2023). Nutrición periodizada: Impey et al. (Sports Med 2018).
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ═══════════════════════════════════
+// PAL
+// ═══════════════════════════════════
+const PALS = [
+  {id:'sed',emoji:'🪑',label:'Muy sedentario',pal:1.40,desc:'Escritorio, sin ejercicio',note:'PAL 1.35–1.45 en DLW (FAO/WHO/UNU 2004). Mínimo real para adultos sin ejercicio formal.'},
+  {id:'lig',emoji:'🚶',label:'Ligeramente activo',pal:1.55,desc:'1–2 días/sem entreno o trabajo de pie',note:'PAL 1.50–1.65 en DLW. Mediana histórica de poblaciones occidentales (Black et al. 1996).'},
+  {id:'mod',emoji:'🏋️',label:'Moderadamente activo',pal:1.72,desc:'3–5 días/sem entreno moderado',note:'PAL 1.68–1.75 según DRI Energy 2023. Más realista para atletas recreativos que el clásico 1.55.'},
+  {id:'act',emoji:'⚡',label:'Muy activo',pal:1.90,desc:'6–7 días/sem o trabajo físico intenso',note:'PAL 1.80–2.00 en DLW para entrenamiento diario o trabajo manual intenso.'},
+  {id:'eli',emoji:'🏅',label:'Atleta élite',pal:2.20,desc:'2 sesiones/día o deporte de competición',note:'PAL 2.0–2.4 en DLW para atletas de élite en carga. Máximo sostenible (Black et al. 1996).'},
+];
+
+// ═══════════════════════════════════
+// OBJETIVOS Y RANGOS
+// ═══════════════════════════════════
+const OBJ = {
+  def:{label:'Definición',adjD:-400,protD:2.4,fatD:25,
+    adj:{min:-500,max:-300,step:25,unit:'kcal/día',label:'Ajuste calórico',
+      ev:'Helms et al. (JISSN 2014): pérdidas de 0.5–1%/semana maximizan la retención muscular. Murphy & Koehler (2022): déficits >500 kcal/día deterioran la masa magra en atletas entrenados.'},
+    prot:{min:2.0,max:3.1,step:0.1,unit:'g/kg',label:'Proteína',
+      ev:'ISSN Position Stand: 2.3–3.1 g/kg en períodos hipocalóricos con atletas de fuerza. Extremo bajo (2.0) para déficit leve y buena base muscular; extremo alto (3.1) para atletas muy magros o déficit agresivo.'},
+    fat:{min:20,max:35,step:1,unit:'%',label:'% Grasa',
+      ev:'Helms et al. (2014): 15–30% de calorías de grasa en culturismo natural. Whittaker & Wu (2021): dietas bajas en grasa reducen testosterona. Mínimo ~40–60g/día absolutos para función hormonal.'},
+  },
+  rec:{label:'Recomposición',adjD:-100,protD:2.5,fatD:25,
+    adj:{min:-200,max:0,step:25,unit:'kcal/día',label:'Ajuste calórico',
+      ev:'Barakat et al. (NSCA 2020) y Bonilla et al. (Front. Nutr. 2024): la recomposición ocurre en mantenimiento o déficit muy leve (0–200 kcal/día). Más efectiva en principiantes o personas con exceso de grasa.'},
+    prot:{min:2.0,max:3.0,step:0.1,unit:'g/kg',label:'Proteína',
+      ev:'Barakat et al. (2020): umbral mínimo ≥2.2 g/kg. Con margen calórico ajustado, la proteína alta es la palanca principal para estimular síntesis muscular. Hasta 3.0 g/kg en atletas avanzados.'},
+    fat:{min:20,max:30,step:1,unit:'%',label:'% Grasa',
+      ev:'En recomposición, bajar de 20% comprometería la función hormonal con el balance calórico tan ajustado. El espacio residual va a carbohidratos para sostener el entrenamiento como estímulo anabólico.'},
+  },
+  vol:{label:'Volumen',adjD:400,protD:2.0,fatD:22,
+    adj:{min:200,max:600,step:25,unit:'kcal/día',label:'Ajuste calórico',
+      ev:'Helms, Krieger & Dieter (Sports Med Open 2023): sin diferencia en masa muscular entre superávit 5% y 15%, pero mayor grasa con superávit grande. Principiantes: 500–600 kcal. Intermedios-avanzados: 200–300 kcal.'},
+    prot:{min:1.6,max:2.5,step:0.1,unit:'g/kg',label:'Proteína',
+      ev:'Morton et al. (Br J Sports Med 2018): MPS se satura a ~1.6 g/kg en eucaloría. Gilbert et al. (JISSN 2025): intakes <2.0 g/kg pueden limitar adaptaciones. Rango 1.6–2.5 g/kg según nivel del atleta.'},
+    fat:{min:18,max:30,step:1,unit:'%',label:'% Grasa',
+      ev:'En volumen se reduce la grasa para dejar más espacio a carbohidratos (combustible principal del entreno de alta intensidad y resíntesis de glucógeno). Mínimo 18% para función hormonal.'},
+  },
+};
+
+const DIST_DEF = {
+  2:[{name:'Comida',pct:50},{name:'Cena',pct:50}],
+  3:[{name:'Desayuno',pct:25},{name:'Comida',pct:40},{name:'Cena',pct:35}],
+  4:[{name:'Desayuno',pct:20},{name:'Comida',pct:35},{name:'Merienda',pct:15},{name:'Cena',pct:30}],
+  5:[{name:'Desayuno',pct:20},{name:'Media mañana',pct:10},{name:'Comida',pct:30},{name:'Merienda',pct:15},{name:'Cena',pct:25}],
+};
+
+const FREQ_MAP = [
+  {col:1,label:'Diario (+1/día)',cls:'f-daily',score:7},
+  {col:2,label:'Diario (1/día)',cls:'f-daily',score:6},
+  {col:3,label:'Semanal (+1/sem)',cls:'f-weekly',score:5},
+  {col:4,label:'Semanal (1/sem)',cls:'f-weekly',score:4},
+  {col:5,label:'Mensual (+1/mes)',cls:'f-monthly',score:3},
+  {col:6,label:'Mensual (1/mes)',cls:'f-monthly',score:2},
+  {col:7,label:'Anual (+1/año)',cls:'f-rare',score:1},
+  {col:8,label:'Anual (1/año)',cls:'f-rare',score:0.5},
+  {col:9,label:'Nunca',cls:'f-never',score:0},
+];
+
+// ═══════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════
+let selPal   = 'mod';
+let curObj   = 'def';
+let tdee     = null, tmb = null, wt = null;
+let nMeals   = 4;
+let mealCfg  = DIST_DEF[4].map(m=>({...m}));
+let trainDays = [0,2,4];
+let freqData  = [];
+
+const DAYS = ['L','M','X','J','V','S','D'];
+
+// ═══════════════════════════════════
+// INIT PAL
+// ═══════════════════════════════════
+function initPal() {
+  document.getElementById('palGrid').innerHTML = PALS.map(p=>`
+    <div class="pal-card ${p.id===selPal?'active':''}" id="pal-${p.id}" onclick="setPal('${p.id}')">
+      <div class="pal-emoji">${p.emoji}</div>
+      <div class="pal-label">${p.label}</div>
+      <div class="pal-val">× ${p.pal.toFixed(2)}</div>
+      <div class="pal-desc">${p.desc}</div>
+    </div>`).join('');
+  updatePalNote();
+}
+
+function setPal(id) {
+  selPal = id;
+  PALS.forEach(p=>document.getElementById('pal-'+p.id).classList.toggle('active',p.id===id));
+  updatePalNote(); compute();
+}
+
+function updatePalNote() {
+  const p = PALS.find(p=>p.id===selPal);
+  document.getElementById('palNote').innerHTML = '<strong>Referencia DLW:</strong> '+p.note;
+}
+
+// ═══════════════════════════════════
+// CÁLCULO PRINCIPAL
+// ═══════════════════════════════════
+function compute() {
+  const w=parseFloat(document.getElementById('weight').value);
+  const h=parseFloat(document.getElementById('height').value);
+  const age=parseFloat(document.getElementById('age').value);
+  const sex=document.getElementById('sex').value;
+
+  const cards = ['cardMeta','cardMeals','cardCSV','cardDiet'];
+  if (!w||!h||!age||w<30||h<140||age<16) {
+    cards.forEach(c=>document.getElementById(c).style.display='none');
+    tdee=null; tmb=null; wt=null; return;
+  }
+
+  wt  = w;
+  tmb = sex==='m' ? 10*w+6.25*h-5*age+5 : 10*w+6.25*h-5*age-161;
+  const pal = PALS.find(p=>p.id===selPal).pal;
+  tdee = tmb * pal;
+
+  const bmi = w/((h/100)**2);
+  const bmiLbl   = bmi<18.5?'Bajo peso':bmi<25?'Normopeso':bmi<30?'Sobrepeso':'Obesidad';
+  const bmiColor = bmi<18.5?'var(--blue)':bmi<25?'var(--green)':bmi<30?'var(--amber)':'var(--red)';
+
+  document.getElementById('metaResult').innerHTML = `
+    <div class="res-grid">
+      <div class="res-block">
+        <div class="rb-lbl">TMB (Mifflin-St Jeor)</div>
+        <div class="rb-val">${Math.round(tmb)}</div>
+        <div class="rb-unit">kcal/día en reposo</div>
+        <div class="rb-form">${sex==='m'?`(10×${w})+(6.25×${h})−(5×${age})+5`:`(10×${w})+(6.25×${h})−(5×${age})−161`}</div>
+      </div>
+      <div class="res-block">
+        <div class="rb-lbl">Factor PAL</div>
+        <div class="rb-val">${pal.toFixed(2)}</div>
+        <div class="rb-unit">${PALS.find(p=>p.id===selPal).label}</div>
+        <div class="rb-form">Calibrado con agua doblemente marcada (DLW)</div>
+      </div>
+      <div class="res-block hl">
+        <div class="rb-lbl">TDEE — Gasto total</div>
+        <div class="rb-val or">${Math.round(tdee)}</div>
+        <div class="rb-unit">kcal/día</div>
+        <div class="rb-form">TMB × PAL · Margen ±10%: ${Math.round(tdee*.9)}–${Math.round(tdee*1.1)} kcal</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted)">IMC: <strong style="color:${bmiColor}">${bmi.toFixed(1)} — ${bmiLbl}</strong></div>`;
+
+  cards.forEach(c=>document.getElementById(c).style.display='block');
+  renderRanges(); renderMacros(); initDays(); renderPeriod(); renderDistTable();
+}
+
+// ═══════════════════════════════════
+// OBJETIVO
+// ═══════════════════════════════════
+function setObj(id) {
+  curObj = id;
+  ['def','rec','vol'].forEach(o=>document.getElementById('tab-'+o).classList.toggle('active',o===id));
+  renderRanges(); renderMacros(); renderPeriod(); renderDistTable();
+}
+
+// ═══════════════════════════════════
+// SLIDERS
+// ═══════════════════════════════════
+function renderRanges() {
+  const o = OBJ[curObj];
+  document.getElementById('rangeControls').innerHTML =
+    rBlock('adj',o.adj,o.adjD,'sl-adj','vl-adj')+
+    rBlock('prot',o.prot,o.protD,'sl-prot','vl-prot')+
+    rBlock('fat',o.fat,o.fatD,'sl-fat','vl-fat');
+}
+
+function rBlock(key,r,def,slId,vlId) {
+  const sfx = r.unit==='%'?'%':r.unit==='g/kg'?' g/kg':' kcal';
+  const disp = r.unit==='g/kg'?def.toFixed(1):def;
+  return `<div class="range-block">
+    <div class="range-head">
+      <span class="range-lbl">${r.label} (${r.unit})</span>
+      <span class="range-val" id="${vlId}">${disp}${sfx}</span>
+    </div>
+    <input type="range" id="${slId}" min="${r.min}" max="${r.max}" step="${r.step}" value="${def}"
+      oninput="onRange('${vlId}','${slId}','${r.unit}')">
+    <div class="range-limits">
+      <span>${r.min}${sfx.trim()} ${key==='adj'&&r.min<0?'(déficit mayor)':key==='adj'&&r.min>=0?'(superávit menor)':'(mínimo)'}</span>
+      <span>${r.max}${sfx.trim()} ${key==='adj'&&r.max<0?'(déficit menor)':key==='adj'&&r.max>=0?'(superávit mayor)':'(máximo)'}</span>
+    </div>
+    <div class="range-ev">${r.ev}</div>
+  </div>`;
+}
+
+function onRange(vlId,slId,unit) {
+  const v = parseFloat(document.getElementById(slId).value);
+  const sfx = unit==='%'?'%':unit==='g/kg'?' g/kg':' kcal';
+  document.getElementById(vlId).textContent = (unit==='g/kg'?v.toFixed(1):v)+sfx;
+  renderMacros(); renderPeriod(); renderDistTable();
+}
+
+function getSl(id,def) {
+  const el = document.getElementById(id);
+  return el ? parseFloat(el.value) : def;
+}
+
+// ═══════════════════════════════════
+// MACROS
+// ═══════════════════════════════════
+function renderMacros() {
+  if (!tdee||!wt) return;
+  const o=OBJ[curObj];
+  const adj=getSl('sl-adj',o.adjD), prot=getSl('sl-prot',o.protD), fat=getSl('sl-fat',o.fatD);
+  const target=tdee+adj, protG=prot*wt, protK=protG*4;
+  const fatK=target*(fat/100), fatG=fatK/9;
+  const carbK=Math.max(0,target-protK-fatK), carbG=carbK/4;
+  const pPct=protK/target*100, cPct=carbK/target*100, fPct=fatK/target*100;
+  const adjC=adj>=0?'var(--green)':'var(--blue)';
+
+  document.getElementById('macroResult').innerHTML = `
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;color:var(--orange)">${Math.round(target)}</span>
+      <span style="font-size:13px;color:var(--muted)">kcal/día</span>
+      <span style="font-size:11px;color:var(--muted);margin-left:4px">TDEE ${Math.round(tdee)} <span style="color:${adjC}">${adj>=0?'+':''}${Math.round(adj)} kcal</span></span>
+    </div>
+    <div class="dist-bar">
+      <div class="db-p" style="width:${pPct}%"></div>
+      <div class="db-c" style="width:${cPct}%"></div>
+      <div class="db-f" style="width:${fPct}%"></div>
+    </div>
+    <div class="dist-leg">
+      <div class="dl-item"><span class="dot" style="background:#ef4444"></span>Prot ${pPct.toFixed(0)}%</div>
+      <div class="dl-item"><span class="dot" style="background:#f59e0b"></span>Carbs ${cPct.toFixed(0)}%</div>
+      <div class="dl-item"><span class="dot" style="background:#a855f7"></span>Grasa ${fPct.toFixed(0)}%</div>
+    </div>
+    <div class="macro-res">
+      <div class="mr-block" style="border-color:rgba(239,68,68,.3)">
+        <div class="mr-val" style="color:#ef4444">${Math.round(protG)}g</div>
+        <div class="mr-lbl">Proteína</div>
+        <div class="mr-sub">${prot.toFixed(1)}g/kg · ${Math.round(protK)} kcal</div>
+      </div>
+      <div class="mr-block" style="border-color:rgba(245,158,11,.3)">
+        <div class="mr-val" style="color:#f59e0b">${Math.round(carbG)}g</div>
+        <div class="mr-lbl">Carbohidratos</div>
+        <div class="mr-sub">${cPct.toFixed(0)}% kcal · ${Math.round(carbK)} kcal</div>
+      </div>
+      <div class="mr-block" style="border-color:rgba(168,85,247,.3)">
+        <div class="mr-val" style="color:#a855f7">${Math.round(fatG)}g</div>
+        <div class="mr-lbl">Grasas</div>
+        <div class="mr-sub">${fat}% kcal · ${Math.round(fatK)} kcal</div>
+      </div>
+    </div>`;
+}
+
+function getMacros() {
+  if (!tdee||!wt) return null;
+  const o=OBJ[curObj];
+  const adj=getSl('sl-adj',o.adjD), prot=getSl('sl-prot',o.protD), fat=getSl('sl-fat',o.fatD);
+  const target=tdee+adj, protG=Math.round(prot*wt), fatG=Math.round(target*(fat/100)/9);
+  const carbG=Math.max(0,Math.round((target-protG*4-fatG*9)/4));
+  return {kcal:Math.round(target), prot:protG, carb:carbG, fat:fatG};
+}
+
+// ═══════════════════════════════════
+// PERIODIZACIÓN
+// ═══════════════════════════════════
+function initDays() {
+  renderDaySelector();
+}
+
+function renderDaySelector() {
+  document.getElementById('daySelector').innerHTML = DAYS.map((d,i)=>
+    `<button class="day-btn ${trainDays.includes(i)?'train':'rest'}" id="day-${i}" onclick="toggleDay(${i})">${d}</button>`
+  ).join('');
+  const nT=trainDays.length;
+  document.getElementById('daySummary').textContent = `${nT} días de entreno · ${7-nT} días de descanso`;
+}
+
+function toggleDay(i) {
+  if (trainDays.includes(i)) { if (trainDays.length>1) trainDays=trainDays.filter(d=>d!==i); }
+  else trainDays=[...trainDays,i].sort((a,b)=>a-b);
+  renderDaySelector(); renderPeriod();
+}
+
+function onPeriodSlider() {
+  const v=document.getElementById('slPeriod').value;
+  document.getElementById('valPeriod').textContent=v+' kcal';
+  renderPeriod();
+}
+
+function renderPeriod() {
+  if (!tdee||!wt) return;
+  const o=OBJ[curObj];
+  const adj=getSl('sl-adj',o.adjD), prot=getSl('sl-prot',o.protD), fat=getSl('sl-fat',o.fatD);
+  const diff=parseInt(document.getElementById('slPeriod').value)||0;
+  const nT=trainDays.length, nR=7-nT;
+  const base=tdee+adj;
+  const trainK=Math.round(base+diff*nR/7), restK=Math.round(base-diff*nT/7);
+  const protG=prot*wt, protKal=protG*4;
+  const fatKal=base*(fat/100), fatG=fatKal/9;
+  const tCK=Math.max(0,trainK-protKal-fatKal), rCK=Math.max(0,restK-protKal-fatKal);
+  const tCG=tCK/4, rCG=rCK/4;
+  const avgK=(nT*trainK+nR*restK)/7, avgC=(nT*tCG+nR*rCG)/7;
+
+  function col(isTrain,kcal,carbG) {
+    const type=isTrain?'train-col':'rest-col', icon=isTrain?'🏋️ Día de ENTRENO':'🛋️ Día de DESCANSO';
+    const kd=Math.round(kcal-base), kdTxt=kd===0?'':(kd>0?'+':'')+kd+' kcal';
+    const kBadge=kd>0?'b-up':kd<0?'b-dn':'b-eq';
+    const cBadge=isTrain?(diff>0?'b-up':'b-eq'):(diff>0?'b-dn':'b-eq');
+    const cTxt=isTrain?(diff>0?'▲ más':'= igual'):(diff>0?'▼ menos':'= igual');
+    const pPct=protKal/kcal*100, cPct=carbG*4/kcal*100, fPct=fatKal/kcal*100;
+    return `<div class="period-col ${type}">
+      <div class="period-col-title">${icon}</div>
+      <div class="period-kcal">${Math.round(kcal)} <span style="font-size:12px;font-weight:400;color:var(--muted)">kcal</span>
+        ${kdTxt?`<span class="badge ${kBadge}" style="font-size:10px;vertical-align:middle;margin-left:6px">${kdTxt}</span>`:''}
+      </div>
+      <div class="dist-bar" style="margin:8px 0 6px">
+        <div class="db-p" style="width:${pPct}%"></div>
+        <div class="db-c" style="width:${cPct}%"></div>
+        <div class="db-f" style="width:${fPct}%"></div>
+      </div>
+      <div class="pm-row"><span class="pm-lbl">🥩 Proteína</span><span class="pm-val" style="color:#ef4444">${Math.round(protG)}g <span class="badge b-eq">= igual</span></span></div>
+      <div class="pm-row"><span class="pm-lbl">🍚 Carbohidratos</span><span class="pm-val" style="color:#f59e0b">${Math.round(carbG)}g <span class="badge ${cBadge}">${cTxt}</span></span></div>
+      <div class="pm-row"><span class="pm-lbl">🫒 Grasa</span><span class="pm-val" style="color:#a855f7">${Math.round(fatG)}g <span class="badge b-eq">= igual</span></span></div>
+    </div>`;
+  }
+
+  document.getElementById('periodResult').innerHTML = `
+    <div class="period-grid">${col(true,trainK,tCG)}${col(false,restK,rCG)}</div>
+    <div class="week-avg">
+      <div class="week-avg-title">📊 Media semanal — el objetivo calórico se mantiene</div>
+      <div style="font-size:12px;color:var(--muted);line-height:2">
+        <span style="color:var(--orange);font-weight:700">~${Math.round(avgK)} kcal/día</span> ·
+        Prot: <span style="color:#ef4444;font-weight:700">${Math.round(protG)}g</span> ·
+        Carbs: <span style="color:#f59e0b;font-weight:700">${Math.round(avgC)}g</span> ·
+        Grasa: <span style="color:#a855f7;font-weight:700">${Math.round(fatG)}g</span>
+        <div style="font-size:10px;color:var(--dim);margin-top:2px">Los picos y valles entre días no alteran el balance semanal total.</div>
+      </div>
+    </div>`;
+}
+
+function getPeriodMacros(type) {
+  if (!tdee||!wt) return null;
+  const o=OBJ[curObj];
+  const adj=getSl('sl-adj',o.adjD), prot=getSl('sl-prot',o.protD), fat=getSl('sl-fat',o.fatD);
+  const diff=parseInt(document.getElementById('slPeriod').value)||0;
+  const nT=trainDays.length, nR=7-nT, base=tdee+adj;
+  const trainK=Math.round(base+diff*nR/7), restK=Math.round(base-diff*nT/7);
+  const protG=Math.round(prot*wt), fatG=Math.round(base*(fat/100)/9);
+  if (type==='train') {
+    const carbG=Math.max(0,Math.round((trainK-protG*4-fatG*9)/4));
+    return {kcal:trainK, prot:protG, carb:carbG, fat:fatG};
+  } else if (type==='rest') {
+    const carbG=Math.max(0,Math.round((restK-protG*4-fatG*9)/4));
+    return {kcal:restK, prot:protG, carb:carbG, fat:fatG};
+  }
+  return getMacros();
+}
+
+// ═══════════════════════════════════
+// DISTRIBUCIÓN COMIDAS
+// ═══════════════════════════════════
+function setMeals(n) {
+  nMeals=n;
+  document.querySelectorAll('.meal-btn').forEach((b,i)=>b.classList.toggle('active',[2,3,4,5][i]===n));
+  mealCfg=DIST_DEF[n].map(m=>({...m}));
+  renderDistTable();
+}
+
+function renderDistTable() {
+  const m = getMacros();
+  const kcal=m?m.kcal:0, prot=m?m.prot:0, carb=m?m.carb:0, fat=m?m.fat:0;
+  const total=mealCfg.reduce((s,x)=>s+x.pct,0);
+  const pEl=document.getElementById('pctTotal');
+  pEl.textContent=total===100?'✓ 100%':`${total}% ${total>100?'↑ excede':'↓ falta'}`;
+  pEl.className=total===100?'pct-ok':'pct-warn';
+
+  document.getElementById('distTable').innerHTML=`
+    <tr><th>Comida</th><th>% kcal</th><th>kcal</th><th style="color:#ef4444">Prot (g)</th><th style="color:#f59e0b">Carbs (g)</th><th style="color:#a855f7">Grasa (g)</th></tr>`+
+    mealCfg.map((mc,i)=>{
+      const mk=kcal*mc.pct/100, mp=prot*mc.pct/100, mc2=carb*mc.pct/100, mf=fat*mc.pct/100;
+      return `<tr>
+        <td><input class="meal-name-in" value="${mc.name}" onchange="mealCfg[${i}].name=this.value"></td>
+        <td><input type="number" value="${mc.pct}" min="1" max="99" onchange="mealCfg[${i}].pct=+this.value;renderDistTable()"> <span style="font-size:11px;color:var(--muted)">%</span></td>
+        <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--orange)">${kcal?Math.round(mk):'—'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;color:#ef4444">${prot?Math.round(mp):'—'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">${carb?Math.round(mc2):'—'}</td>
+        <td style="font-family:'JetBrains Mono',monospace;color:#a855f7">${fat?Math.round(mf):'—'}</td>
+      </tr>`;
+    }).join('');
+}
+
+// ═══════════════════════════════════
+// CSV
+// ═══════════════════════════════════
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if (file) loadCSV(file);
+}
+
+function loadCSV(file) {
+  if (!file) return;
+  const r=new FileReader();
+  r.onload=e=>parseCSV(e.target.result);
+  r.readAsText(file,'UTF-8');
+}
+
+function parseCSV(text) {
+  const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(l=>l.trim());
+  freqData=[];
+  for (let i=2;i<lines.length;i++) {
+    const cols=parseCSVLine(lines[i]);
+    if (!cols[0]||!cols[0].trim()) continue;
+    const name=cols[0].trim();
+    let score=-1,label='',cls='f-rare',notes='';
+    for (let c=1;c<=9;c++) {
+      const val=(cols[c]||'').trim();
+      if (val && /x/i.test(val)) {
+        const fm=FREQ_MAP.find(f=>f.col===c);
+        if (fm&&fm.score>score) { score=fm.score; label=fm.label; cls=fm.cls; }
+        const nt=val.replace(/x/i,'').replace(/[()]/g,'').trim();
+        if (nt.length>2) notes=nt;
+      }
+    }
+    if (score>=0) freqData.push({name,score,label,cls,notes});
+  }
+  renderFreq();
+}
+
+function parseCSVLine(line) {
+  const res=[]; let cur='',inQ=false;
+  for (let i=0;i<line.length;i++) {
+    const ch=line[i];
+    if (ch==='"') { inQ=!inQ; continue; }
+    if (ch===','&&!inQ) { res.push(cur); cur=''; continue; }
+    cur+=ch;
+  }
+  res.push(cur); return res;
+}
+
+function renderFreq() {
+  document.getElementById('freqResult').style.display='block';
+  const sorted=[...freqData].sort((a,b)=>b.score-a.score);
+  const daily=sorted.filter(f=>f.score>=6).length;
+  const weekly=sorted.filter(f=>f.score>=4&&f.score<6).length;
+  const never=sorted.filter(f=>f.score===0).length;
+  document.getElementById('freqSummary').textContent=`${freqData.length} alimentos · ${daily} diarios · ${weekly} semanales · ${never} nunca`;
+  document.getElementById('freqGrid').innerHTML=sorted.map(f=>`
+    <div class="freq-item">
+      <span class="freq-name">${f.name}</span>
+      <span class="freq-badge ${f.cls}">${f.label}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════
+// GENERAR DIETA
+// ═══════════════════════════════════
+async function generateDiet() {
+  const name=document.getElementById('name').value||'el cliente';
+  const dayType=document.getElementById('dietDayType').value;
+  const notes=document.getElementById('dietNotes').value;
+  const total=mealCfg.reduce((s,m)=>s+m.pct,0);
+  if (total!==100) {
+    document.getElementById('dietResult').innerHTML='<div class="err-box">⚠️ La distribución de comidas debe sumar exactamente 100%.</div>';
+    return;
+  }
+
+  const macros=getPeriodMacros(dayType);
+  if (!macros) {
+    document.getElementById('dietResult').innerHTML='<div class="err-box">⚠️ Introduce primero los datos del cliente y calcula el TDEE.</div>';
+    return;
+  }
+
+  const preferred=freqData.filter(f=>f.score>0).sort((a,b)=>b.score-a.score)
+    .map(f=>`${f.name} (${f.label})${f.notes?' — '+f.notes:''}`).join('\n');
+  const neverList=freqData.filter(f=>f.score===0).map(f=>f.name).join(', ');
+
+  const mealsDetail=mealCfg.map(m=>{
+    const mk=Math.round(macros.kcal*m.pct/100);
+    const mp=Math.round(macros.prot*m.pct/100);
+    const mc=Math.round(macros.carb*m.pct/100);
+    const mf=Math.round(macros.fat*m.pct/100);
+    return `- ${m.name}: ${mk} kcal | P:${mp}g | C:${mc}g | G:${mf}g`;
+  }).join('\n');
+
+  const dayLabel=dayType==='train'?'día de entrenamiento':dayType==='rest'?'día de descanso':'día medio';
+
+  const prompt=`Eres un nutricionista deportivo especializado en culturismo natural y composición corporal. Genera un plan de alimentación para ${name} (${dayLabel}).
+
+OBJETIVO: ${OBJ[curObj].label}
+MACROS TOTALES DEL DÍA: ${macros.kcal} kcal | Proteína: ${macros.prot}g | Carbohidratos: ${macros.carb}g | Grasas: ${macros.fat}g
+
+DISTRIBUCIÓN POR COMIDAS:
+${mealsDetail}
+
+ALIMENTOS QUE EL CLIENTE CONSUME CON FRECUENCIA (priorizarlos):
+${preferred||'No especificado — usa alimentos comunes y nutritivos'}
+
+ALIMENTOS QUE EL CLIENTE NO CONSUME NUNCA (excluirlos):
+${neverList||'Ninguno especificado'}
+
+NOTAS ADICIONALES: ${notes||'Ninguna'}
+
+INSTRUCCIONES:
+1. Para CADA comida genera EXACTAMENTE 3 opciones (Opción A, Opción B, Opción C).
+2. Cada opción incluye alimentos con gramajes exactos en gramos.
+3. Cada opción respeta los macros de esa comida (±5% tolerancia).
+4. Prioriza alimentos de la lista de consumo frecuente.
+5. Las 3 opciones deben ser variadas entre sí.
+6. Indica macros reales de cada opción (kcal, P, C, G).
+7. Alimentos simples, reales y fáciles de preparar.
+8. Ten en cuenta el objetivo: en ${OBJ[curObj].label} ${curObj==='def'?'prioriza saciedad y proteína':curObj==='vol'?'prioriza carbohidratos de calidad':'busca equilibrio entre proteína y carbohidratos'}.
+
+Responde ÚNICAMENTE en JSON válido, sin markdown, sin texto adicional:
+{"meals":[{"name":"nombre comida","kcal":número,"prot":número,"carb":número,"fat":número,"options":[{"label":"Opción A","foods":["100g pechuga de pollo","80g arroz blanco cocido"],"kcal":número,"prot":número,"carb":número,"fat":número},{"label":"Opción B",...},{"label":"Opción C",...}]}]}`;
+
+  const btn=document.getElementById('btnGen');
+  btn.disabled=true; btn.textContent='⏳ Generando...';
+  document.getElementById('dietResult').innerHTML=`
+    <div class="loading">
+      <div class="spin">🤖</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">Generando dieta personalizada...</div>
+      <div style="font-size:12px;color:var(--muted)">Analizando preferencias y calculando gramajes · 15–30 segundos</div>
+    </div>`;
+
+  try {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    if (!apiKey) {
+      document.getElementById('dietResult').innerHTML='<div class="err-box">⚠️ Introduce tu API key de Anthropic en la parte superior de la página antes de generar la dieta.</div>';
+      btn.disabled=false; btn.textContent='✨ Generar dieta personalizada';
+      return;
+    }
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const raw=data.content.map(b=>b.text||'').join('');
+    const clean=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    renderDiet(JSON.parse(clean), name, dayLabel);
+  } catch(err) {
+    document.getElementById('dietResult').innerHTML=`<div class="err-box">❌ Error: ${err.message}</div>`;
+  } finally {
+    btn.disabled=false; btn.textContent='✨ Generar dieta personalizada';
+  }
+}
+
+function renderDiet(data, name, dayLabel) {
+  const meals=data.meals||[];
+  if (!meals.length) { document.getElementById('dietResult').innerHTML='<div class="err-box">❌ Error al parsear la respuesta. Inténtalo de nuevo.</div>'; return; }
+
+  const mBar=(p,c,f,k)=>{
+    const pP=(p*4)/k*100, cP=(c*4)/k*100, fP=(f*9)/k*100;
+    return `<div style="display:flex;height:3px;border-radius:2px;overflow:hidden;width:80px;margin-top:4px"><div style="width:${pP}%;background:#ef4444"></div><div style="width:${cP}%;background:#f59e0b"></div><div style="width:${fP}%;background:#a855f7"></div></div>`;
+  };
+
+  window._lastDiet={data,name,dayLabel};
+
+  document.getElementById('dietResult').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:700">Plan alimentario · ${name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${OBJ[curObj].label} · ${dayLabel} · ${meals.length} comidas · 3 opciones por comida</div>
+      </div>
+      <button class="btn-sec" onclick="exportDiet()">↗ Exportar dieta</button>
+    </div>
+    ${meals.map(meal=>`
+      <div class="meal-card">
+        <div class="meal-card-head">
+          <div>
+            <div class="meal-card-title">${meal.name}</div>
+            ${mBar(meal.prot,meal.carb,meal.fat,meal.kcal)}
+          </div>
+          <div class="meal-card-macros">
+            <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--orange)">${meal.kcal} kcal</span>
+            <span class="mpill mp-p">P ${meal.prot}g</span>
+            <span class="mpill mp-c">C ${meal.carb}g</span>
+            <span class="mpill mp-f">G ${meal.fat}g</span>
+          </div>
+        </div>
+        ${(meal.options||[]).map(opt=>`
+          <div class="meal-opt">
+            <div class="opt-label">${opt.label}</div>
+            <div class="opt-foods">${(opt.foods||[]).map(f=>`• ${f}`).join('<br>')}</div>
+            <div class="opt-macros">
+              <span>🔥 <strong>${opt.kcal}</strong> kcal</span>
+              <span>🥩 P: <strong style="color:#ef4444">${opt.prot}g</strong></span>
+              <span>🍚 C: <strong style="color:#f59e0b">${opt.carb}g</strong></span>
+              <span>🫒 G: <strong style="color:#a855f7">${opt.fat}g</strong></span>
+            </div>
+          </div>`).join('')}
+      </div>`).join('')}`;
+}
+
+function exportDiet() {
+  if (!window._lastDiet) return;
+  const {data,name,dayLabel}=window._lastDiet;
+  let txt=`PLAN DE ALIMENTACIÓN — ${name.toUpperCase()}\nObjetivo: ${OBJ[curObj].label} · ${dayLabel}\nFecha: ${new Date().toLocaleDateString('es-ES')}\n${'═'.repeat(50)}\n\n`;
+  (data.meals||[]).forEach(meal=>{
+    txt+=`━━━ ${meal.name.toUpperCase()} ━━━\nObjetivo: ${meal.kcal} kcal | P:${meal.prot}g C:${meal.carb}g G:${meal.fat}g\n\n`;
+    (meal.options||[]).forEach(opt=>{
+      txt+=`  ${opt.label}:\n`;
+      (opt.foods||[]).forEach(f=>txt+=`    · ${f}\n`);
+      txt+=`    → ${opt.kcal} kcal | P:${opt.prot}g C:${opt.carb}g G:${opt.fat}g\n\n`;
+    });
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download=`Dieta_${name.replace(/\s+/g,'_')}.txt`; a.click();
+}
+
+function exportAll() {
+  if (!tdee||!wt) return;
+  const name=document.getElementById('name').value||'Cliente';
+  const pal=PALS.find(p=>p.id===selPal);
+  const m=getMacros();
+  let txt=`INFORME TDEE — ${name.toUpperCase()}\nFecha: ${new Date().toLocaleDateString('es-ES')}\n${'═'.repeat(50)}\n\n`;
+  txt+=`METABOLISMO\nTMB: ${Math.round(tmb)} kcal/día\nPAL: ${pal.pal.toFixed(2)} (${pal.label})\nTDEE: ${Math.round(tdee)} kcal/día\n\n`;
+  if (m) txt+=`OBJETIVO: ${OBJ[curObj].label}\nKcal objetivo: ${m.kcal} kcal/día\nProteína: ${m.prot}g | Carbos: ${m.carb}g | Grasas: ${m.fat}g\n`;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download=`TDEE_${name.replace(/\s+/g,'_')}.txt`; a.click();
+}
+
+// ═══════════════════════════════════
+// API KEY
+// ═══════════════════════════════════
+function saveKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (key.startsWith('sk-ant-') && key.length > 20) {
+    localStorage.setItem('anthropic_api_key', key);
+    document.getElementById('keySaved').style.display = 'inline';
+  } else {
+    document.getElementById('keySaved').style.display = 'none';
+  }
+}
+
+function toggleKeyVisibility() {
+  const inp = document.getElementById('apiKey');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function loadKey() {
+  const saved = localStorage.getItem('anthropic_api_key');
+  if (saved) {
+    document.getElementById('apiKey').value = saved;
+    document.getElementById('keySaved').style.display = 'inline';
+  }
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+loadKey();
+initPal();
+setObj('def');
+setMeals(4);
+</script>
+</body>
+</html>
